@@ -999,23 +999,23 @@ int runPipe( Request request )
 	}
 }
 
+//A plugin constructed, never initialised: the parameters need no GL, so CI
+//lists them on a runner that may have no GL context at all.
 int runList()
 {
-	Rig rig;
-	if( !rig.Init( 64, 36 ) )
-		return 1;
-	for( const NamedParameter& p : listParameters( rig.plugin ) )
+	BluebookPlugin plugin;
+	for( const NamedParameter& p : listParameters( plugin ) )
 	{
 		std::printf( "%2u  %-16s  %-8s  ", p.index, p.name.c_str(), kindName( p.type ) );
 		if( p.type == FF_TYPE_TEXT )
-			std::printf( "\"%s\"", rig.plugin.GetTextParameter( p.index ) );
+			std::printf( "\"%s\"", plugin.GetTextParameter( p.index ) );
 		else
 			std::printf( "%g", p.value );
 		if( p.type == FF_TYPE_OPTION )
 		{
 			std::printf( "  [" );
-			for( unsigned int e = 0; e < rig.plugin.GetNumParamElements( p.index ); ++e )
-				std::printf( "%s%s", e ? ", " : "", rig.plugin.GetParamElementName( p.index, e ) );
+			for( unsigned int e = 0; e < plugin.GetNumParamElements( p.index ); ++e )
+				std::printf( "%s%s", e ? ", " : "", plugin.GetParamElementName( p.index, e ) );
 			std::printf( "]" );
 		}
 		std::printf( "\n" );
@@ -1143,6 +1143,16 @@ int main( int argc, char** argv )
 	//message, not SIGPIPE's silent 141: ignored here, the write fails.
 	std::signal( SIGPIPE, SIG_IGN );
 
+	//The parameters and the offline checks need no GL, and are answered
+	//before asking for a context: CI runs them on a runner that may have none.
+	const auto noGL = []( const std::string& flag ) {
+		return flag == "--offline" || flag == "--names" || flag == "--mappings" || flag == "--layout";
+	};
+	if( list )
+		return runList();
+	if( !pipe && !film && out.empty() && !flags.empty() && std::all_of( flags.begin(), flags.end(), noGL ) )
+		return runChecks( flags, request );
+
 	CGLContextObj context = createContext();
 	if( context == nullptr )
 	{
@@ -1151,9 +1161,7 @@ int main( int argc, char** argv )
 	}
 
 	int result = 0;
-	if( list )
-		result = runList();
-	else if( pipe )
+	if( pipe )
 		result = runPipe( request );
 	else if( film )
 		result = runFilm( request );

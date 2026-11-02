@@ -1,0 +1,120 @@
+name: ci
+
+# macOS and Windows. The CMakeLists branches on APPLE and WIN32 and has no
+# Linux path at all, so ubuntu is not an option. The Windows job is slitscan's
+# (schlieren's and pitch's before it): a GLEW-shaped break is one macOS is
+# structurally blind to, because macOS never links GLEW. Bluebook had never
+# been built on Windows before this job.
+#
+# The macOS runner cannot be relied on for an accelerated GL context, so the
+# harness runs `bbtest --offline` (every check that needs no GL, answered
+# before a context is asked for) and then every picture check on Apple's
+# software renderer, where the runner has one. The shaders are covered the
+# other way, by glslc. tools/verify.sh runs the same checks on a Mac's GPU, at
+# two rasters, with the negative controls and the mutants.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The FFGL SDK is a submodule. Without this CMake fails at configure
+          # time with a missing-directory error that reads like a broken repo.
+          submodules: recursive
+
+      - name: Configure
+        # arm64 only, unlike the release build's universal arm64;x86_64: the
+        # second slice doubles the build for no extra signal, because a source
+        # break is not architecture-specific. Passed as a single value with no
+        # semicolon, which the shell would split.
+        run: >
+          cmake -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_OSX_ARCHITECTURES=arm64
+          -DBLUEBOOK_BUILD_TOOLS=ON
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Parameters
+        # No GL needed, so this one cannot be a runner problem.
+        run: ./build/bbtest --list
+
+      - name: Offline checks
+        # The names, the controls' mappings against the README's range ends,
+        # the caption's layout. Defined once, in bbtest; not listed here.
+        timeout-minutes: 15
+        run: ./build/bbtest --offline
+
+      - name: Picture checks on the software renderer
+        # Apple's software renderer at 320x180, where the runner has one: it
+        # found three bugs this Mac's GPU never showed. A runner with no GL
+        # context at all is said so and skipped, never passed.
+        timeout-minutes: 30
+        shell: bash
+        run: |
+          set +e
+          out=$( BBTEST_RENDERER=software ./build/bbtest --all --size 320x180 2>&1 )
+          status=$?
+          set -e
+          printf '%s\n' "$out" | tail -60
+          case "$out" in
+            *"no OpenGL 4.1 core context"*) echo "::warning::no software GL context on this runner: the picture checks were skipped"; exit 0 ;;
+          esac
+          exit $status
+
+      - name: Shaders compile
+        # The same script tools/verify.sh runs. GLSLC_REQUIRED: a runner
+        # without glslc must fail, not skip.
+        run: |
+          brew install shaderc
+          GLSLC_REQUIRED=1 tools/glslc.sh
+
+      # Uploading is not only for the artefact: it means a Dependabot bump to
+      # actions/upload-artifact is exercised by a check, not only by a release.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bluebook-macos-arm64
+          path: build/*.bundle
+          if-no-files-found: error
+
+  windows:
+    name: Windows
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Configure
+        # The toolchain path MUST stay double-quoted: a `run:` step on Windows
+        # is PowerShell, and unquoted this expands to nothing. Tools off: bbtest
+        # links CGL and is macOS-only.
+        run: >
+          cmake -B build -A x64
+          -DCMAKE_BUILD_TYPE=Release
+          -DBLUEBOOK_BUILD_TOOLS=OFF
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: The DLL, as a host sees it
+        # pwsh checks only the LAST exit code of a step.
+        run: |
+          ./tools/wincheck.ps1 -Dll "build/Release/Bluebook.dll" -Name "SW Bluebook" -Id BK01 -Params 54
+          if( $LASTEXITCODE ) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bluebook-windows-x86_64
+          path: build/Release/*.dll
+          if-no-files-found: error

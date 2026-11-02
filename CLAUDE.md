@@ -42,6 +42,12 @@ the shaders, the grain layers or the aura's streamers.
 - No dead controls: `python3 tools/sweep.py` (50 swept, all live).
 - Software renderer: `BBTEST_RENDERER=software ./build/bbtest --all --size 320x180`.
 - Render cost: `./build/bbtest --bench`.
+- CI (`.github/workflows/ci.yml`, every push to main and every pull request):
+  the build, `--list`, `--offline`, every picture check on the runner's
+  software renderer at 320x180 (skipped with a warning if it has no GL),
+  glslc; and the Windows build, loaded by `tools/wincheck.ps1` as a host
+  would. `release.yml` builds and publishes on a `v*` tag; run by hand, it
+  builds both platforms and publishes nothing.
 
 ## Notes
 - **Every 1:1 read is a `texelFetch`** at `texelOf( size )`; every other read
@@ -56,6 +62,8 @@ the shaders, the grain layers or the aura's streamers.
 - All animation runs on `elapsed` (the sum of this instance's own dt), never
   the host's clock directly. The host clock's unit is voted on (rosette's).
 - No trig in the GLSL: the torch's path is worked out on the CPU.
+- `--list` and the offline checks are answered before a GL context is asked
+  for, so CI can run them on a runner with none. Keep new GL-free checks there.
 - All host parameters are 0..1 and mapped in `Controls.cpp`; options hold the
   element index; Freeze acts on the press.
 - GLSL reserved words (`patch sample input output filter common active half
@@ -73,5 +81,5 @@ the shaders, the grain layers or the aura's streamers.
 
 ## Not done yet
 - Never loaded into Resolume on any platform. No Windows build.
-- Public at github.com/stoatworks-labs/bluebook, with no CI yet. Not registered
-  in stoatworks-backend: no website entry. No user guide, video or presets.
+- Public at github.com/stoatworks-labs/bluebook, with CI. Not registered in
+  stoatworks-backend: no website entry. No user guide, video or presets.
