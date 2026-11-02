@@ -14,7 +14,9 @@ is a stage, and they run in one order every frame:
    enlarged by `1 / ( 1 - 2 weave )` and offset by up to `weave` each way, so its edge
    never reaches the frame. The result is smeared by Trail (a one-pole) into `trail`.
    The freeze reads `trail` too: a press copies what the print stage showed last frame,
-   and while frozen the print stage shows that copy instead of the clip.
+   and while frozen the print stage shows that copy instead of the clip. So a press
+   inside a timed hold copies the clip itself (`rehit`): `trail` holds only the freeze
+   then, and re-freezing that would flash the same still again.
 2. **Geometry** (`Pass::Frame`). Freeze Push about the centre and the enlargement about
    its target as one affine map, then the stretch. The enlargement's depth is in
    generations: `m = Magnify ^ ( depth / Generations )`, each generation a hair off the
@@ -25,7 +27,8 @@ is a stage, and they run in one order every frame:
    the framed picture's mip level 2, at a quarter of the raster, blurred by a separable
    Gaussian of Aura Size.
 4. **Composite**. Silhouette, Contrast, the duotone Tint, the Torch in linear light, the
-   aura (outside the subject, with streamers along its outward gradient), exposure
+   aura (outside the subject, with streamers along its outward gradient; a bright subject
+   keeps 30 % of its glow as a tint, none at Silhouette 1, so a silhouette is black), exposure
    flicker and the vignette, the grain layers, the freeze's grey and flash, the caption,
    Mix.
 
@@ -41,7 +44,9 @@ coarse.
 at weight 300 into a 704x336 R8 atlas (`source/FontAtlas.cpp`, committed); the composite
 draws each placed glyph from it, with the halo from the same field. Letters reveal on a
 three-letter ramp as Caption Show rises. Legend adds a catalogue number that moves on with
-each print.
+each print. The atlas is printable ASCII, so `Printable()` turns each UTF-8 character
+outside it into one `?` before anything is measured or cut at `kMaxCaption`: a byte at a
+time, an accent measured as a space and drawn as two `?` sat 12 px off centre at 1080p.
 
 **Time.** Every animation runs on `elapsed`, the sum of this instance's own clamped dt, so a
 host clock that jumps moves nothing by more than a quarter of a second. The host clock's
@@ -142,8 +147,14 @@ Assumed, because nothing here can check it:
 - All 120 checks pass on Apple's software renderer, which found traps 3 to 5.
 - No `sin`, `cos`, `tan` or `atan` in the GLSL (`verify.sh` greps): the torch's path is
   worked out on the CPU, and every shape is an `exp` or a `smoothstep`.
-- Not tried: Mesa, or any Windows GL. CI builds the Windows DLL with MSVC (no warnings
-  outside the SDK) and `tools/wincheck.ps1` loads it, but nothing has drawn with it.
+- Windows: CI builds the DLL with MSVC (no warnings outside the SDK) and
+  `tools/wincheck.ps1` loads it. plugin-bench's Arena gate ran a CI build in Arena 7.27.1
+  on win-lab (Mesa llvmpipe, no GPU), 2026-11-02: 9 passed, 0 failed, 1 skipped; every
+  control as declared; 29 of the plugin's controls moved Arena's picture of a still; 12
+  inconclusive (Trail, Tint, Contrast, Grain, Grain Size, Flicker, Corona, Writhe, Torch
+  Angle, Caption Show, Caption Style, Caption Glow), because the defaults' grain and
+  flicker make two grabs of a still differ by about as much; 7 declared inert (Step On,
+  Step Rate, Dissolve, and the four Freeze settings). Nothing on a Windows GPU.
 
 ## The negative controls and mutants
 
@@ -170,18 +181,16 @@ live grain is new every film frame, so nobody can see it.
 
 ## Not done, and open questions
 
-- **Never loaded into Resolume.** The first Arena run should check the inspector's
-  groups and names, Step On against Arena's transport, Caption as a text field, and
-  Freeze against a host's own Bypass.
+- **Never loaded into Resolume on macOS.** The first Arena run there should check the
+  inspector's groups and names, Step On against Arena's transport, Caption as a text
+  field, and Freeze against a host's own Bypass. The Windows gate checked the names,
+  types and ranges, but drives only values and stills.
 - **Naming.** The README names The X-Files and NCIS once each, nominatively. The site
   dropped product names from `/hardware` at Allan's request; if he'd rather the same
   here, it's two sentences in the README and the Inspirations entries in
   `ATTRIBUTIONS.md`.
-- **Not registered in stoatworks-backend yet.** The repo is public at
-  `stoatworks-labs/bluebook`, with CI and a tag-driven release, but there's no
-  website entry, so
-  `source/StoatworksAbout*.h` and `ATTRIBUTIONS.md` are hand copies until the backend
-  generates them, and the README has no downloads block.
-- No user guide, demo video or presets. Windows: built and loaded in CI, never drawn.
+- **No preset dropdown.** Resolume saves parameter presets itself, and the fleet's
+  copy-based preset pattern fights the host's echo (fleet note
+  `reference_plugin_factory_presets`). The user guide's Recipes name the looks instead.
 - The trail's memory at 4K (see Decisions). Allocating it in half float when Trail is 0
   would halve that, at the price of a reallocation when Trail is first raised.

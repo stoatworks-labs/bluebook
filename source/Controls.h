@@ -174,7 +174,7 @@ enum class Tint
 enum class CaptionStyle
 {
 	Title = 0,///< centred, letters fading in from the left
-	Legend,   ///< small, at the right, with a catalogue number counting the prints
+	Legend,   ///< right-aligned, with a catalogue number counting the prints beneath
 	Count
 };
 
@@ -198,7 +198,7 @@ double StepRateFromParam( float value );
 float ParamFromStepRate( double perSecond );
 
 /// Weave: how far a print sits off true, as a fraction of the frame height,
-/// 0 to 1.2 %, linearly. A per-frame shimmer of a tenth of that rides on top.
+/// 0 to 1.2 %, linearly. A per-frame shimmer of 12 % of that rides on top.
 double WeaveFromParam( float value );
 
 /// Trail: the smear's half-life, 0 to 1.5 s, quadratically (the short end is
@@ -255,7 +255,8 @@ double FreezeHoldFromParam( float value );
 /// Freeze Fade: colour to grey, 0 to 1.5 s, linearly. 0 cuts.
 double FreezeFadeFromParam( float value );
 
-/// Freeze Push: how far in the camera pushes over the hold, 0 to 20 %.
+/// Freeze Push: how far in the camera pushes once frozen, 0 to 20 %. It
+/// eases in with a 0.35 s time constant (kPushSettle), whatever the hold.
 double FreezePushFromParam( float value );
 
 } // namespace bluebook

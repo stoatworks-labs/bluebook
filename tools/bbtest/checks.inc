@@ -747,6 +747,16 @@ int runAura( const Raster& r, const Perturb& perturb )
 		const double far = blueAt( std::min( 6.0 * sigma, w / 2 - 2.0 ) );
 		Check( far < 0.01 * blueAt( 0.5 ), fmt( "and six sigma out it has gone: %.4f", far ) );
 	}
+	//Silhouette 1 on the Bright key: the subject is a black mass, with none
+	//of the glow it keeps when lit, and the glow still falls round it.
+	auto dark = makeRig( r, with( kQuiet, { "Aura=0.5", "Corona=0", "Aura Colour=Blue", "Silhouette=1" } ), half, perturb.hooks );
+	if( !dark || !dark->Render( 3 ) )
+		return 1;
+	const Floats shape = dark->Output();
+	const float* inner = at( shape, w, w / 4, h / 2 );
+	const float* past  = at( shape, w, w / 2, h / 2 );
+	const float most   = std::max( { inner[ 0 ], inner[ 1 ], inner[ 2 ] } );
+	Check( most < 0.002f && past[ 2 ] > 0.15, fmt( "Silhouette 1: the subject is black (%.4f at most) and the glow still falls past it (b %.3f)", most, past[ 2 ] ) );
 	return g_failures - before;
 }
 
@@ -896,6 +906,30 @@ int runFreeze( const Raster& r, const Perturb& perturb )
 			released = k;
 	}
 	Check( released >= 0 && std::abs( released - holdFrames ) <= 1, fmt( "Freeze Hold %.2f s: let go %d frames after the press (%.1f)", hold, released, hold * 60.0 ) );
+
+	//A second press inside the hold hits again on the clip as it is then,
+	//not on the freeze already on screen: pressed on frames 30 and 51, it
+	//holds what a single press on frame 52 holds (the frame before it).
+	const std::vector< std::string > held = with( kQuiet, { "Freeze Fade=0", "Freeze Flash=0", "Freeze Push=0", setting( "Freeze Hold", holdParam ) } );
+	auto twice = makeRig( r, held, moving( 0 ), perturb.hooks );
+	auto once  = makeRig( r, held, moving( 0 ), perturb.hooks );
+	if( !twice || !once )
+		return 1;
+	twice->beforeFrame = [ & ]( int f ) { twice->Upload( moving( f ) ); };
+	once->beforeFrame  = [ & ]( int f ) { once->Upload( moving( f ) ); };
+	if( !twice->Render( 30 ) || !twice->Press( PT_FREEZE ) || !twice->Render( 20 ) || !twice->Press( PT_FREEZE ) || !twice->Render( 5 ) )
+		return 1;
+	if( !once->Render( 52 ) || !once->Press( PT_FREEZE ) || !once->Render( 5 ) )
+		return 1;
+	const Floats again = twice->Output(), fresh = once->Output();
+	int rehitUnlike = 0, rehitStale = 0;
+	for( size_t i = 0; i < again.size(); ++i )
+	{
+		rehitUnlike += std::fabs( again[ i ] - fresh[ i ] ) > kHalfUlp;
+		rehitStale += i < first.size() && std::fabs( again[ i ] - first[ i ] ) > kHalfUlp;
+	}
+	Check( twice->plugin.LastFrame().frozen && rehitUnlike == 0 && rehitStale > 0,
+	       fmt( "a second press in the hold freezes the clip as it is then (%d values unlike a fresh press there)", rehitUnlike ) );
 
 	//The flash: white on the press, gone as e^( -t / 0.08 s ); the fade to
 	//grey is linear over Freeze Fade.
@@ -1122,16 +1156,39 @@ int runLayout()
 	const int before = g_failures;
 	BluebookPlugin plugin;
 	plugin.SetFloatParameter( PT_CAPTION_SHOW, 1.0f );
-	const CaptionLayout title = plugin.LayOutCaption( 1920, 1080, "TRUTH", 0, 1.0 );
+	const CaptionLayout title = plugin.LayOutCaption( 1920, 1080, "TRUTH", 0 );
 	const double centre       = 0.5 * ( title.box[ 0 ] + title.box[ 2 ] );
 	Check( title.glyphs.size() == 5 && std::fabs( centre - 960.0 ) < 0.5 * font::kCellWidth * title.scale,
 	       fmt( "Title: five letters, centred (box centre %.1f px)", centre ) );
 	plugin.SetFloatParameter( PT_CAPTION_STYLE, 1.0f );
-	const CaptionLayout legend = plugin.LayOutCaption( 1920, 1080, "PHOTO", 41, 1.0 );
+	const CaptionLayout legend = plugin.LayOutCaption( 1920, 1080, "PHOTO", 41 );
 	Check( legend.glyphs.size() == 5 + 10 && legend.box[ 2 ] > 0.94 * 1920 && legend.box[ 2 ] < 0.94 * 1920 + font::kCellWidth * legend.scale,
 	       fmt( "Legend: the line and a catalogue number, against 94%% of the width (%zu glyphs, right edge %.0f)", legend.glyphs.size(), legend.box[ 2 ] ) );
+	plugin.SetFloatParameter( PT_CAPTION_STYLE, 0.0f );
+	//A character the font lacks is one '?', measured as it is drawn: an
+	//accent (two bytes), an alien (four) and a stray byte lay out exactly as
+	//the ASCII line with a '?' in each place, and the limit counts characters.
+	const auto same = [ &plugin ]( const std::string& a, const std::string& b ) {
+		const CaptionLayout x = plugin.LayOutCaption( 1920, 1080, a, 0 );
+		const CaptionLayout y = plugin.LayOutCaption( 1920, 1080, b, 0 );
+		if( x.glyphs.size() != y.glyphs.size() || !std::equal( x.box, x.box + 4, y.box ) )
+			return false;
+		for( size_t i = 0; i < x.glyphs.size(); ++i )
+			if( x.glyphs[ i ].code != y.glyphs[ i ].code || x.glyphs[ i ].left != y.glyphs[ i ].left )
+				return false;
+		return true;
+	};
+	std::string accents, asDrawn;
+	for( int i = 0; i < kMaxCaption / 2 + 1; ++i )
+		accents += "A\xC3\x89";
+	for( int i = 0; i < kMaxCaption / 2; ++i )
+		asDrawn += "A?";
+	Check( same( "CAF\xC3\x89", "CAF?" ) && same( "\xF0\x9F\x91\xBD HERE", "? HERE" ) && same( "A\x89" "B", "A?B" ),
+	       "Title: an accent, an alien and a stray byte are each one '?', centred as drawn" );
+	Check( same( accents, asDrawn ), fmt( "%d letters, every other one accented, are cut at %d characters, not bytes",
+	                                      kMaxCaption + 2, kMaxCaption ) );
 	plugin.SetFloatParameter( PT_CAPTION_SHOW, 0.0f );
-	Check( plugin.LayOutCaption( 1920, 1080, "TRUTH", 0, 1.0 ).glyphs.empty(), "Show 0 lays out nothing" );
+	Check( plugin.LayOutCaption( 1920, 1080, "TRUTH", 0 ).glyphs.empty(), "Show 0 lays out nothing" );
 	return g_failures - before;
 }
 

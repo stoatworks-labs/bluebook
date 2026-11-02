@@ -53,6 +53,28 @@ std::string glStringOrUnknown( GLenum name )
 	return value ? reinterpret_cast< const char* >( value ) : "unknown";
 }
 
+/// The caption as the font can draw it, one byte a character: each UTF-8
+/// character the font has no glyph for (anything outside printable ASCII) is
+/// one '?', so it is measured as it is drawn and counts once against
+/// kMaxCaption. A byte that is not valid UTF-8 is a character of its own.
+std::string Printable( const std::string& text )
+{
+	std::string out;
+	int pending = 0; //continuation bytes still owed to a character already written
+	for( const char ch : text )
+	{
+		const unsigned char b = static_cast< unsigned char >( ch );
+		if( pending > 0 && ( b & 0xC0u ) == 0x80u )
+		{
+			--pending;
+			continue;
+		}
+		pending = b >= 0xF0u && b < 0xF8u ? 3 : b >= 0xE0u && b < 0xF0u ? 2 : b >= 0xC0u && b < 0xE0u ? 1 : 0;
+		out += b >= font::kFirst && b <= 126 ? ch : '?';
+	}
+	return out;
+}
+
 uint32_t pcg( uint32_t v )
 {
 	const uint32_t state = v * 747796405u + 2891336453u;
@@ -321,12 +343,10 @@ void BluebookPlugin::UpdateSteps( double dt )
 	{
 		const double rate = StepRateFromParam( params[ PT_STEP_RATE ] );
 		stepPosition += dt * rate;
-		stepDuration = 1.0 / rate;
 	}
 	else
 	{
 		const double perBeat = printsPerBeat( on );
-		stepDuration         = 60.0 / std::max( 1.0f, bpm ) / perBeat;
 		//On the host's bar when it sends one, so a print lands ON the beat;
 		//on its tempo alone when it does not.
 		if( hostBeatSeen )
@@ -351,9 +371,8 @@ void BluebookPlugin::UpdateSteps( double dt )
 }
 
 //---------------------------------------------------------------------------
-CaptionLayout BluebookPlugin::LayOutCaption( int width, int height, const std::string& text, long long steps, double exposure ) const
+CaptionLayout BluebookPlugin::LayOutCaption( int width, int height, const std::string& text, long long steps ) const
 {
-	(void)exposure;
 	CaptionLayout out;
 	const auto style   = static_cast< CaptionStyle >( OptionIndex( params[ PT_CAPTION_STYLE ], static_cast< int >( CaptionStyle::Count ) ) );
 	const double cap   = CaptionSizeFromParam( params[ PT_CAPTION_SIZE ] ) * height;
@@ -363,7 +382,7 @@ CaptionLayout BluebookPlugin::LayOutCaption( int width, int height, const std::s
 	out.scale          = static_cast< float >( scale );
 
 	std::vector< std::string > lines;
-	lines.push_back( text.substr( 0, static_cast< size_t >( kMaxCaption ) ) );
+	lines.push_back( Printable( text ).substr( 0, static_cast< size_t >( kMaxCaption ) ) );
 	if( style == CaptionStyle::Legend )
 	{
 		//A catalogue number that moves on with every print, as the stills'
@@ -481,16 +500,19 @@ FFResult BluebookPlugin::ProcessOpenGL( ProcessOpenGLStruct* pgl )
 
 	//---------------------------------------------------------------------
 	// The freeze. A press freezes what is on screen; with a timed hold a
-	// press while frozen hits again, latched it lets go.
+	// press while frozen hits again, on the clip as it is now (what is on
+	// screen then is the freeze itself), and latched it lets go.
 	//---------------------------------------------------------------------
 	const double hold   = FreezeHoldFromParam( params[ PT_FREEZE_HOLD ] );
 	bool freezeCapture  = false;
+	bool rehit          = false;
 	if( freezePresses > 0 )
 	{
 		if( freezing && hold == 0.0 )
 			freezing = false;
 		else
 		{
+			rehit         = freezing;
 			freezing      = true;
 			freezeAge     = 0.0;
 			freezeCapture = true;
@@ -522,7 +544,9 @@ FFResult BluebookPlugin::ProcessOpenGL( ProcessOpenGLStruct* pgl )
 	}
 	else
 	{
-		if( freezeCapture )
+		if( freezeCapture && rehit )
+			copyInto( frozen, source.Handle, max.s, max.t, width, height, 1.0f, 0.0f, 0.0f );
+		else if( freezeCapture )
 			copyInto( frozen, trail[ current ].TextureID(), 1.0f, 1.0f, width, height, 1.0f, 0.0f, 0.0f );
 		if( state.captured )
 		{
@@ -755,7 +779,7 @@ FFResult BluebookPlugin::ProcessOpenGL( ProcessOpenGLStruct* pgl )
 		std::lock_guard< std::mutex > lock( textMutex );
 		text = captionText;
 	}
-	layout = LayOutCaption( width, height, text, stepCount, exposure );
+	layout = LayOutCaption( width, height, text, stepCount );
 	float glyphs[ shaders::kMaxGlyphs * 4 ] = {};
 	for( size_t i = 0; i < layout.glyphs.size(); ++i )
 	{

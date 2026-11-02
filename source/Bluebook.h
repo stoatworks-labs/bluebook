@@ -117,7 +117,7 @@ public:
 	}
 
 	/// The caption's layout for a raster, as ProcessOpenGL makes it.
-	CaptionLayout LayOutCaption( int width, int height, const std::string& text, long long steps, double exposure ) const;
+	CaptionLayout LayOutCaption( int width, int height, const std::string& text, long long steps ) const;
 
 private:
 	void UpdateClock();
@@ -177,7 +177,6 @@ private:
 	// The step printer's clock, and the beat.
 	//-------------------------------------------------------------------
 	double stepPosition  = 0.0;///< in prints; a print is taken when its floor moves
-	double stepDuration  = 0.125;
 	long long stepCount  = 0;
 	bool stepPrimed      = false;
 	float bpm            = 120.0f;

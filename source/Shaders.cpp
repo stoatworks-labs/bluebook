@@ -434,10 +434,10 @@ void main()
 		//its edge, so len * sigma is 0.8 there and falls away either side.
 		float edge    = smoothstep( 0.08, 0.3, len * GlowSigma );
 		float flicker = mix( 1.0, 0.2 + 1.7 * n, Corona * edge * ( 1.0 - subject ) );
-		//A bright subject keeps a little of its glow, which tints it; a dark
-		//one keeps none, or the mass that was meant to stand against the
-		//light turns grey.
-		float inside = KeyMode == 1 ? 1.0 : 0.7;
+		//A bright subject keeps a little of its glow, which tints it, less
+		//as Silhouette darkens it; a dark one keeps none. Either way a
+		//silhouette is a black mass against the light, not a blue one.
+		float inside = KeyMode == 1 ? 1.0 : mix( 0.7, 1.0, Silhouette );
 		float where  = hooked( kHookGlowInside ) ? subject : 1.0 - inside * subject;
 		aura = AuraColour * ( AuraGain * g * where * flicker );
 	}
