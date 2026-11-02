@@ -11,6 +11,7 @@
         bbtest --film N                    N frames, raw RGBA (top row first) on stdout
         bbtest --pipe                      raw RGBA frames in on stdin, out on stdout
         bbtest --shaders DIR               every assembled fragment shader, as the plugin compiles it
+        bbtest --trace N                   N frames of what the CPU decided, one line each (demo/tools/check_port.mjs)
         bbtest --offline                   the checks that need no GL context (CI)
         bbtest --all                       every check
 
@@ -952,6 +953,45 @@ int runFilm( const Request& request )
 	return 0;
 }
 
+/// --trace N: N frames on the synthetic clock, cues and --at as for --film, and
+/// after each one what the CPU decided (LastFrame) and the caption as laid out
+/// (LastCaption). The browser demo's port of the CPU half is held to this by
+/// demo/tools/check_port.mjs. Doubles at %.17g and floats at %.9g, so each
+/// prints exactly. The card is held still: its pixels decide nothing here.
+///
+///   F frame steps captured fade decay frozen grey flash push generation magnify
+///     scale biasX biasY torchX torchY exposure layers scale... weight...
+///   C frame glyphs scale x0 y0 x1 y1, then code left top reveal per glyph
+int runTrace( Request request )
+{
+	request.still = true;
+	Rig rig;
+	std::map< unsigned int, Cue > cues;
+	Floats still;
+	bool animated = false;
+	if( !prepare( rig, request, cues, still, animated ) )
+		return 2;
+	for( int f = 0; f < request.frames; ++f )
+	{
+		if( !rig.Render( 1 ) )
+			return 1;
+		const FrameState& s = rig.plugin.LastFrame();
+		std::printf( "F %d %lld %d %.17g %.17g %d %.17g %.17g %.17g %.17g %.17g %.17g %.17g %.17g %.17g %.17g %.17g %d", f, s.steps,
+		             s.captured ? 1 : 0, s.fade, s.decay, s.frozen ? 1 : 0, s.grey, s.flash, s.push, s.generation, s.magnify, s.scale,
+		             s.biasX, s.biasY, s.torchX, s.torchY, s.exposure, s.layerCount );
+		for( int i = 0; i < s.layerCount; ++i )
+			std::printf( " %.9g", s.layerScale[ i ] );
+		for( int i = 0; i < s.layerCount; ++i )
+			std::printf( " %.9g", s.layerWeight[ i ] );
+		const CaptionLayout& c = rig.plugin.LastCaption();
+		std::printf( "\nC %d %zu %.9g %.9g %.9g %.9g %.9g", f, c.glyphs.size(), c.scale, c.box[ 0 ], c.box[ 1 ], c.box[ 2 ], c.box[ 3 ] );
+		for( const PlacedGlyph& g : c.glyphs )
+			std::printf( " %d %.9g %.9g %.9g", g.code, g.left, g.top, g.reveal );
+		std::printf( "\n" );
+	}
+	return 0;
+}
+
 /// The fleet's pipe: raw RGBA frames of --size, top row first, in on stdin
 /// and out on stdout, on the synthetic clock, cues and --at as for --film.
 int runPipe( Request request )
@@ -1056,7 +1096,7 @@ int main( int argc, char** argv )
 	std::string shaderDirectory;
 	std::string caption;
 	bool haveCaption = false;
-	bool list = false, film = false, pipe = false;
+	bool list = false, film = false, pipe = false, trace = false;
 	std::vector< std::string > flags;
 
 	for( int i = 1; i < argc; ++i )
@@ -1114,6 +1154,11 @@ int main( int argc, char** argv )
 			film           = true;
 			request.frames = std::max( 1, std::atoi( argv[ ++i ] ) );
 		}
+		else if( argument == "--trace" && hasNext )
+		{
+			trace          = true;
+			request.frames = std::max( 1, std::atoi( argv[ ++i ] ) );
+		}
 		else if( argument == "--shaders" && hasNext )
 			shaderDirectory = argv[ ++i ];
 		else if( argument == "--size" && hasNext )
@@ -1161,7 +1206,9 @@ int main( int argc, char** argv )
 	}
 
 	int result = 0;
-	if( pipe )
+	if( trace )
+		result = runTrace( request );
+	else if( pipe )
 		result = runPipe( request );
 	else if( film )
 		result = runFilm( request );

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bluebook — browser demo | Stoatworks Labs</title>
+    <meta name="description" content="Try the Bluebook FFGL effect for Resolume in your browser: the look of a 1990s paranormal TV title sequence (step-printed, enlarged to grain, a face pulled long, a glowing hand, a torch in the dark, a teal grade and a caption spelling itself out) and a crime drama's freeze-frame hit. The plugin's own GLSL and caption font, ported to WebGL2 unedited, fed by a JavaScript port of its CPU half that is checked against the plugin's harness. A demo, not the plugin." />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./vendor/kit.css" />
+    <link rel="canonical" href="https://bluebook-demo.stoatworks-labs.com/" />
+  </head>
+  <body>
+    <main id="demo">
+      <noscript>
+        <p>
+          This demo runs the plugin's shaders and a port of its CPU half in your
+          browser, so it needs JavaScript and WebGL2. The plugin itself, its
+          source and its downloads are on
+          <a href="https://github.com/stoatworks-labs/bluebook">its repository</a>.
+        </p>
+      </noscript>
+    </main>
+
+    <script type="module" src="./plugin.js"></script>
+    <script
+      src="./vendor/support-footer.js"
+      defer
+      data-app="Bluebook"
+      data-repo="https://github.com/stoatworks-labs/bluebook"
+      data-note="A browser demo of the plugin's shaders over a port of its CPU half. Nothing you load here leaves your machine."
+    ></script>
+  </body>
+</html>

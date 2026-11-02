@@ -42,6 +42,13 @@ the shaders, the grain layers or the aura's streamers.
 - No dead controls: `python3 tools/sweep.py` (50 swept, all live).
 - Software renderer: `BBTEST_RENDERER=software ./build/bbtest --all --size 320x180`.
 - Render cost: `./build/bbtest --bench`.
+- Browser demo (`demo/`): `python3 demo/tools/check_shaders.py` (its shaders and
+  font are the plugin's; `--write` regenerates them, never edit by hand) and
+  `node demo/tools/check_port.mjs --bbtest build/bbtest` (its CPU port decides
+  what the plugin does, against `bbtest --trace N`). `verify.sh` runs both.
+  Deployed by `.github/workflows/deploy.yml` to bluebook-demo.stoatworks-labs.com
+  (a route; see `wrangler.toml`). Change the plugin's CPU side and the port in
+  `demo/plugin.js` must change with it.
 - CI (`.github/workflows/ci.yml`, every push to main and every pull request):
   the build, `--list`, `--offline`, every picture check on the runner's
   software renderer at 320x180 (skipped with a warning if it has no GL),
@@ -74,13 +81,17 @@ the shaders, the grain layers or the aura's streamers.
 - `bluebook_core` is an OBJECT library: the plugin registers itself from a
   file-scope constructor nothing references.
 - The macOS build must be universal. Check with `lipo`, never the build log.
-- `source/StoatworksAbout*.h` and `ATTRIBUTIONS.md` are provisional hand
-  copies until the repo is registered in stoatworks-backend; after that they
-  are generated there (`sync-about.py`, `sync-attributions.py`). Edit the
-  sources in the backend then.
+- `source/StoatworksAbout*.h` and `ATTRIBUTIONS.md` are generated in
+  stoatworks-backend (`sync-about.py`, `sync-attributions.py`); edit the
+  sources there, not the copies.
+- The caption is ASCII: `Printable()` makes each UTF-8 character one `?` before
+  anything is measured or cut. A press inside a timed hold freezes the clip
+  itself, not `trail` (which holds the freeze then).
 
 ## Not done yet
-- Never loaded into Resolume on any platform. The Windows DLL is built in CI
-  and `tools/wincheck.ps1` loads it, but it has never drawn a frame.
-- Public at github.com/stoatworks-labs/bluebook, with CI. Not registered in
-  stoatworks-backend: no website entry. No user guide, video or presets.
+- Never loaded into Resolume on macOS. On Windows, plugin-bench's Arena gate ran
+  a CI build in Arena 7.27.1 on win-lab (llvmpipe): loads, registers, every
+  control as declared, renders, 29 controls move Arena's picture of a still, 12
+  inconclusive against the grain, none dead (README, Status).
+- No preset dropdown, on purpose: Resolume saves parameter presets itself, and the
+  fleet's copy-based presets fight the host's echo. The guide's Recipes are the looks.

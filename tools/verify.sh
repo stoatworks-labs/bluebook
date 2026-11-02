@@ -88,6 +88,12 @@ BBTEST="$BUILD/bbtest"
 step "Shaders"
 #---------------------------------------------------------------------------
 tools/glslc.sh "$BBTEST" || fail "a shader does not compile"
+out=$( python3 demo/tools/check_shaders.py 2>&1 ) && echo "ok   browser demo: $( tail -1 <<<"$out" )" || { grep -v '^ok' <<<"$out" || true; fail "demo/shaders.js or demo/fontatlas.js has drifted from source/: python3 demo/tools/check_shaders.py --write"; }
+if command -v node >/dev/null; then
+	out=$( node demo/tools/check_port.mjs --bbtest "$BBTEST" 2>&1 ) && echo "ok   browser demo: $( tail -1 <<<"$out" )" || { tail -5 <<<"$out"; fail "the demo's CPU port decides differently from the plugin: node demo/tools/check_port.mjs --bbtest $BBTEST --verbose"; }
+else
+	echo "skip browser demo's CPU port: no node"
+fi
 
 #---------------------------------------------------------------------------
 step "Bundle"
