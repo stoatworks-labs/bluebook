@@ -91,7 +91,7 @@ the shaders, the grain layers or the aura's streamers.
 ## Not done yet
 - Never loaded into Resolume on macOS. On Windows, plugin-bench's Arena gate ran
   a CI build in Arena 7.27.1 on win-lab (llvmpipe): loads, registers, every
-  control as declared, renders, 29 controls move Arena's picture of a still, 12
+  control as declared, renders, 38 controls move Arena's picture of a still, 2
   inconclusive against the grain, none dead (README, Status).
 - No preset dropdown, on purpose: Resolume saves parameter presets itself, and the
   fleet's copy-based presets fight the host's echo. The guide's Recipes are the looks.

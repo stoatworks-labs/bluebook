@@ -150,11 +150,13 @@ Assumed, because nothing here can check it:
 - Windows: CI builds the DLL with MSVC (no warnings outside the SDK) and
   `tools/wincheck.ps1` loads it. plugin-bench's Arena gate ran a CI build in Arena 7.27.1
   on win-lab (Mesa llvmpipe, no GPU), 2026-11-02: 9 passed, 0 failed, 1 skipped; every
-  control as declared; 29 of the plugin's controls moved Arena's picture of a still; 12
-  inconclusive (Trail, Tint, Contrast, Grain, Grain Size, Flicker, Corona, Writhe, Torch
-  Angle, Caption Show, Caption Style, Caption Glow), because the defaults' grain and
-  flicker make two grabs of a still differ by about as much; 7 declared inert (Step On,
-  Step Rate, Dissolve, and the four Freeze settings). Nothing on a Windows GPU.
+  control as declared; 38 of the plugin's controls moved Arena's picture of a still, the
+  small ones measured with Grain, Flicker and Weave at 0 (the defaults' grain, flicker and
+  weave make two grabs of a still differ by about as much; plugin-bench's
+  `arena/expect/bluebook.json` sets them as preconditions); 2 inconclusive (Torch Angle
+  steers a beam that is already moving, Grain Size sizes grain that is new every frame);
+  8 declared inert (Step On, Step Rate, Dissolve, Trail, and the four Freeze settings).
+  Nothing on a Windows GPU.
 
 ## The negative controls and mutants
 

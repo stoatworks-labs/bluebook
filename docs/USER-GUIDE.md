@@ -42,12 +42,13 @@ Torch Sweep 0, Torch X 0.55 and Torch Y 0.6, with Caption Show 1 and Caption Y 0
 > mine, in Resolume Arena 7.27.1 on software rendering (Mesa llvmpipe, no GPU). It loads,
 > registers as `SW Bluebook` (`BK01`, an effect), every control is as declared (name, order, type,
 > range and default), it renders, Arena's log stayed clean and Arena survived the run.
-> **29** of the plugin's controls measurably changed Arena's picture of a still. **12** couldn't be
-> told apart from the frame's own grain and flicker on that picture, so they're inconclusive rather
-> than dead: Trail, Tint, Contrast, Grain, Grain Size, Flicker, Corona, Writhe, Torch Angle, Caption
-> Show, Caption Style and Caption Glow. **7** can't act on a still at all and were left out: Step
-> On, Step Rate and Dissolve (a still prints as the same still), and Freeze Hold, Freeze Fade,
-> Freeze Flash and Freeze Push (they only act during a timed freeze). Nobody has watched it follow
+> **38** of the plugin's controls measurably changed Arena's picture of a still (the subtle ones
+> with Grain, Flicker and Weave off, since those make every grab a little different). **2** are
+> inconclusive rather than dead: Torch Angle steers a beam that's already moving, and Grain Size
+> sizes grain that's new every frame. **8** can't act on a still at all and were left out: Step
+> On, Step Rate and Dissolve (a still prints as the same still), Trail (a still smeared into
+> itself is the same still), and Freeze Hold, Freeze Fade, Freeze Flash and Freeze Push (they
+> only act during a timed freeze). Nobody has watched it follow
 > Arena's transport, pressed Freeze in Arena or timed it in Arena.
 > Try it on a spare layer before you put it in a show.
 >

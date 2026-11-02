@@ -22,6 +22,9 @@ harness's own test card (a figure, a light in the sky, a grid and colour bars) a
 150 frames in, on the defaults with Aura at 0.55, Corona at 0.7, the caption shown and Caption Y
 at 0.2.</sub>
 
+<!-- downloads:start -->
+<!-- downloads:end -->
+
 ## The idea
 
 If you watched television in the nineties you'll know the one I mean: thirty-odd seconds
@@ -91,7 +94,8 @@ or Resolume's own envelopes; at 1 every letter is in.
 ## Status
 
 **v0.1.0.** Measured offline on one Mac, and run in Resolume Arena on Windows. It's never
-been in Resolume on macOS.
+been in Resolume on macOS. There's a
+[user guide](https://stoatworks-labs.com/software/bluebook/guide/).
 
 ### Measured offline, on macOS
 
@@ -134,14 +138,16 @@ the plugin's own) arrives with the name, order, type, range and default declared
 renders; Arena's log stays clean and Arena survived the run: **9 passed, 0 failed, 1
 skipped**.
 
-Against Arena's still test picture, 29 of the plugin's controls measurably changed the
-frame, every Enlarge and Stretch control but Writhe among them, and none came out dead. Twelve were
-inconclusive, because the defaults' own grain and flicker make every grab of a still a
-little different and these changed it by about as much: Trail, Tint, Contrast, Grain, Grain
-Size, Flicker, Corona, Writhe, Torch Angle, Caption Show, Caption Style and Caption Glow.
-Seven can't act on a still at all and weren't asked to: Step On, Step Rate and Dissolve (a
-still prints as the same still every time) and the four Freeze settings (they only act
-during a freeze, and the gate writes values and grabs stills). Nobody has watched Step On
+Against Arena's still test picture, 38 of the plugin's controls measurably changed the
+frame, every Enlarge, Stretch and Aura control among them, and none came out dead. The
+defaults' own grain, flicker and weave make every grab of a still a little different, so
+the controls whose change is small were measured with those three switched off. Two were
+still inconclusive: Torch Angle steers a beam that's already moving, and Grain Size sizes
+grain that's new every frame, so neither keeps still long enough for two grabs to agree.
+Eight can't act on a still at all and weren't asked to: Step On, Step Rate and Dissolve (a
+still prints as the same still every time), Trail (a still smeared into itself is the
+still it was) and the four Freeze settings (they only act during a freeze, and the gate
+writes values and grabs stills). Nobody has watched Step On
 follow Arena's transport or pressed Freeze in Arena, and software rendering says nothing
 about a GPU, or about speed.
 
