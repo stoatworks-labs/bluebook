@@ -28,10 +28,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macos-14 and never macos-13: the Intel macOS runners are retired,
+          # macos-15 and never macos-13: the Intel macOS runners are retired,
           # so x86_64 is cross-compiled from Apple Silicon. CMakeLists.txt's
           # CMAKE_OSX_ARCHITECTURES does that on its own.
-          - { name: macos-universal, os: macos-14 }
+          - { name: macos-universal, os: macos-15 }
           - { name: windows-x86_64,  os: windows-latest }
     steps:
       - uses: actions/checkout@v7
@@ -64,7 +64,7 @@ jobs:
       - name: Check the DLL (Windows)
         if: runner.os == 'Windows'
         run: |
-          ./tools/wincheck.ps1 -Dll "build/Release/Bluebook.dll" -Name "SW Bluebook" -Id BK01 -Params 54
+          ./tools/wincheck.ps1 -Dll "build/Release/Bluebook.dll" -Name "SW Bluebook" -Id BK01 -Params 55
           if( $LASTEXITCODE ) { exit $LASTEXITCODE }
 
       - name: Derive version

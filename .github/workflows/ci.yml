@@ -21,7 +21,7 @@ on:
 jobs:
   macos:
     name: macOS
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v7
         with:
@@ -110,7 +110,7 @@ jobs:
       - name: The DLL, as a host sees it
         # pwsh checks only the LAST exit code of a step.
         run: |
-          ./tools/wincheck.ps1 -Dll "build/Release/Bluebook.dll" -Name "SW Bluebook" -Id BK01 -Params 54
+          ./tools/wincheck.ps1 -Dll "build/Release/Bluebook.dll" -Name "SW Bluebook" -Id BK01 -Params 55
           if( $LASTEXITCODE ) { exit $LASTEXITCODE }
 
       - uses: actions/upload-artifact@v7

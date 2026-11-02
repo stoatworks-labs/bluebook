@@ -1,7 +1,7 @@
 <#
     What a host sees of a built Windows DLL, with no GL and no Resolume.
 
-        tools/wincheck.ps1 -Dll build/Release/Bluebook.dll -Name "SW Bluebook" -Id BK01 -Params 54
+        tools/wincheck.ps1 -Dll build/Release/Bluebook.dll -Name "SW Bluebook" -Id BK01 -Params 55
 
     It LOADS the DLL (so a missing runtime or dependency fails here, where
     dumpbin cannot see it), finds plugMain, and asks it what Resolume asks

@@ -3,8 +3,8 @@
 Bluebook is built on other people's work. This file lists what that work is, who did
 it, and what it is doing here.
 
-Once the repo is registered in `stoatworks-backend`, this file is generated there by
-`scripts/sync-attributions.py`. Until then it's a hand copy in the same shape.
+It is generated — the master lists live in the `stoatworks-backend` repo and are
+pushed out by `scripts/sync-attributions.py`. Edit it there, not here.
 
 ## Code we derived from other people's work
 
@@ -20,7 +20,7 @@ The plugin class's shape and its table of controls, source/GLState.h, source/Pas
 
 ## Third-party code this project uses
 
-Libraries, SDKs, frameworks and assets the project is built on or bundles.
+Libraries, SDKs and frameworks the project is built on or bundles.
 
 ### Resolume FFGL SDK
 
@@ -28,45 +28,67 @@ Libraries, SDKs, frameworks and assets the project is built on or bundles.
 Licence: BSD-3-Clause  
 Copyright: FreeFrame
 
-Vendored as a git submodule at external/ffgl, pinned at b1afaf9.
+Vendored as a git submodule at external/ffgl (third_party/ffgl in oxbow).
 
-The plugin ABI itself. An FFGL effect is defined by this SDK's headers — there is no other way to be loadable by Resolume Arena and Avenue.
+The plugin ABI itself. An FFGL effect or source is defined by this SDK's headers — there is no other way to be loadable by Resolume Arena and Avenue.
+
+### GLEW — the OpenGL Extension Wrangler Library
+
+<https://github.com/nigels-com/glew>  
+Licence: BSD-3-Clause (with Mesa 3-D and Khronos components)  
+Copyright: Milan Ikits, Marcelo E. Magallon and Lev Povalahev
+
+Arrives inside the FFGL submodule at external/ffgl/deps/glew-2.1.0. Not fetched separately.
+
+Resolves OpenGL entry points on Windows, where the system headers stop at OpenGL 1.1.
+
+### libpng
+
+<http://www.libpng.org/pub/png/libpng.html>  
+Licence: PNG Reference Library License (libpng)  
+Copyright: the PNG Reference Library authors
+
+Arrives inside the FFGL submodule, under the SDK's CustomThumbnail sample.
+
+Part of the upstream SDK tree rather than something these plugins call directly — listed because it is present in the checkout.
 
 ### Roboto Condensed
 
 <https://github.com/googlefonts/roboto-classic>  
 Licence: SIL Open Font License 1.1  
-Copyright: 2011 The Roboto Project Authors
+Copyright: The Roboto Project Authors
 
-The caption's lettering: printable ASCII at weight 300, baked by tools/make-font.py into a signed distance field in source/FontAtlas.cpp. The licence and notice are in fonts/OFL.txt. The font is embedded in the plugin, never sold on its own, and keeps its name.
+Printable ASCII at weight 300, baked by the repo's own tool into a signed distance field compiled into the plugin. The licence and notice are committed as fonts/OFL.txt and ship in every download.
 
-### zlib
-
-<https://zlib.net>  
-Licence: zlib  
-Copyright: Jean-loup Gailly and Mark Adler
-
-The macOS system copy, linked by the harness (tools/bbtest) only, to read and write PNGs. The plugin doesn't use it.
+Lettering a plugin can draw at any size from one small atlas, with nothing to install. The OFL allows embedding it in software, provided it is never sold on its own.
 
 ## Work we checked ourselves against
 
-### Fast third-order texture filtering — Christian Sigg and Markus Hadwiger, GPU Gems 2, ch. 20 (2005)
+No code was taken from these — but they were how we knew we had it right, and that is worth saying out loud.
+
+### Fast third-order texture filtering — C. Sigg and M. Hadwiger, GPU Gems 2, chapter 20 (2005)
 
 The cubic B-spline read in the frame pass (bspline() in source/Shaders.cpp): four bilinear taps instead of sixteen, which is what a print enlarged by an optical printer looks like rather than a bilinear smear.
 
-### Improved alpha-tested magnification for vector textures and special effects — Chris Green, Valve, SIGGRAPH 2007
+### Improved alpha-tested magnification for vector textures and special effects — C. Green, Valve, SIGGRAPH 2007
 
 The caption's signed distance field: one small atlas draws a crisp letter at any size, and the same field gives the halo.
 
-### Hash functions for GPU rendering — Mark Jarzynski and Marc Olano, JCGT 9(3), 2020; PCG — Melissa O'Neill
+### Hash functions for GPU rendering — M. Jarzynski and M. Olano, JCGT 9 (2020); PCG by M. O'Neill
+
+<https://jcgt.org/published/0009/03/02/>
 
 pcg() in source/Shaders.cpp and the harness: the integer hash behind the grain, the corona's noise and the weave, the same on every GPU.
 
 ## Inspirations
 
+What this set out to be. No code, assets or binaries from any of these were used or examined — the debt is to the idea.
+
 ### The opening titles of The X-Files (1993) — main title sequence by Castle/Bryant/Johnsen
 
-The treatments this plugin recreates. No footage, music, logo, lettering or text from the sequence is used, and the plugin isn't affiliated with or endorsed by anyone who made it. Read about it at Art of the Title (<https://www.artofthetitle.com/title/the-x-files>), Reflections on Film and Television (<https://reflectionsonfilmandtelevision.blogspot.com/2014/06/outre-intro-x-files-1993-2002.html>) and Fonts In Use (<https://fontsinuse.com/uses/9064/the-x-files-main-title>).
+<https://www.artofthetitle.com/title/the-x-files>
+
+The treatments this plugin recreates. No footage, music, logo, lettering or text from the sequence is used, and the plugin isn't affiliated with or endorsed by anyone who made it. Also read at Reflections on Film and Television (https://reflectionsonfilmandtelevision.blogspot.com/2014/06/outre-intro-x-files-1993-2002.html) and Fonts In Use (https://fontsinuse.com/uses/9064/the-x-files-main-title).
 
 ### The freeze-frame scene transition of NCIS (2003–)
 
