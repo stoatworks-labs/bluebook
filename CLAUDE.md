@@ -73,4 +73,5 @@ the shaders, the grain layers or the aura's streamers.
 
 ## Not done yet
 - Never loaded into Resolume on any platform. No Windows build.
-- No GitHub repo, no website entry, no user guide, no video, no presets.
+- Public at github.com/stoatworks-labs/bluebook, with no CI yet. Not registered
+  in stoatworks-backend: no website entry. No user guide, video or presets.

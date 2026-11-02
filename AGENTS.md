@@ -176,7 +176,8 @@ live grain is new every film frame, so nobody can see it.
   dropped product names from `/hardware` at Allan's request; if he'd rather the same
   here, it's two sentences in the README and the Inspirations entries in
   `ATTRIBUTIONS.md`.
-- **Not registered anywhere yet:** no GitHub repo, no website entry, so
+- **Not registered in stoatworks-backend yet.** The repo is public at
+  `stoatworks-labs/bluebook` (no CI yet), but there's no website entry, so
   `source/StoatworksAbout*.h` and `ATTRIBUTIONS.md` are hand copies until the backend
   generates them, and the README has no downloads block.
 - No Windows build, user guide, demo video or presets.
