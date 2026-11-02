@@ -37,7 +37,11 @@ Torch Sweep 0, Torch X 0.55 and Torch Y 0.6, with Caption Show 1 and Caption Y 0
 > holds the frame bit for bit, and Freeze Push at the top pushes in ×1.2. Thirteen models that
 > are wrong on purpose and 17 one-character changes to the shipped code are all caught, and all
 > 50 controls that `tools/sweep.py` can move change the picture.
-> It's **never been loaded into Resolume on macOS**.
+> On a **Mac** it has been in **Resolume Arena 7.28.1**, the release build, driven over Arena's
+> REST API with Arena's output read back as pictures, not played by anybody. Every control arrives
+> as declared, Mix 0 is the effect bypassed to the bit, the same 38 controls change the picture,
+> Step On prints at Arena's tempo on Beat, 1/2 Beat and Bar (60 to 120 BPM), a Freeze press holds
+> the grey frame for its 1.31 s and lets go, and a Caption survives a save and a reopen.
 > On **Windows** it has been in Resolume: a CI build of the plugin, on `win-lab`, a Windows VM of
 > mine, in Resolume Arena 7.27.1 on software rendering (Mesa llvmpipe, no GPU). It loads,
 > registers as `SW Bluebook` (`BK01`, an effect), every control is as declared (name, order, type,
@@ -48,8 +52,8 @@ Torch Sweep 0, Torch X 0.55 and Torch Y 0.6, with Caption Show 1 and Caption Y 0
 > sizes grain that's new every frame. **8** can't act on a still at all and were left out: Step
 > On, Step Rate and Dissolve (a still prints as the same still), Trail (a still smeared into
 > itself is the same still), and Freeze Hold, Freeze Fade, Freeze Flash and Freeze Push (they
-> only act during a timed freeze). Nobody has watched it follow
-> Arena's transport, pressed Freeze in Arena or timed it in Arena.
+> only act during a timed freeze). Nobody has played it in a show, looked at how Arena's inspector
+> lays it out, tried it in Avenue or as a clip effect, or timed it inside Resolume.
 > Try it on a spare layer before you put it in a show.
 >
 > This codebase was created with AI assistance, directed and reviewed by a human author.
@@ -474,8 +478,10 @@ quarter beat or bar line, and the dissolve runs from there. Bars are counted fro
 coming round. If the bar phase stops moving, so do the prints, and the picture holds the last one.
 Until it has seen the bar phase move at all, the effect prints at Resolume's tempo on its own
 clock (120 BPM if no tempo has arrived), so the speed is right but the prints needn't land on the
-beat. That the bar phase runs from 0 to 1 over a bar and comes round on the downbeat is an
-assumption nobody has checked against Arena yet.
+beat. In Arena on a Mac the prints came at Arena's tempo: every 0.505 s on *Beat* at 120 BPM,
+every 2.01 s on *Bar* at 120 and every 2.43 s at 100. Either way of printing would give those
+numbers, so whether they come from the bar phase, and land on Arena's own downbeat, nobody has
+checked.
 
 **Enlarge Run** *Cycle* and the Legend's catalogue number both count prints, so on a beat Step On
 they move on with the beat.
@@ -484,10 +490,11 @@ they move on with the beat.
 the last press. At the top of Freeze Hold it latches: frozen until the next press, and that press
 only lets go.
 
-**Freeze and Resolume's Bypass.** Nothing in the code knows about Bypass. If Resolume stops calling
-an effect while it's bypassed (I haven't checked whether it does), the effect's clock stops with
-it, and when it comes back it moves on by a quarter of a second at most. So a freeze bypassed
-halfway through picks up roughly where it was, and so does the torch's sweep. A press that reaches
+**Freeze and Resolume's Bypass.** Nothing in the code knows about Bypass. When Resolume stops
+calling an effect while it's bypassed, the effect's clock stops with it, and when it comes back it
+moves on by a quarter of a second at most. So a freeze bypassed halfway through picks up roughly
+where it was, and so does the torch's sweep. Arena on a Mac does stop calling it: a freeze bypassed
+for half a second came back still grey and let go at about 1.7 s, not 1.35. A press that reaches
 it while it's bypassed is acted on at the next frame it draws.
 
 ---
@@ -571,9 +578,9 @@ transparency, and the aura's light and the caption make a clear area opaque wher
 
 ## Known limits
 
-- **Never loaded into Resolume on macOS.** On Windows it has only run in Arena on software
-  rendering, and nobody has watched Step On follow Arena's transport, pressed Freeze there, or seen
-  how Freeze sits with Resolume's own Bypass and Opacity.
+- **Driven, not played.** In Arena on a Mac it was driven over the REST API and its output read
+  back, so nobody has looked at the inspector's layout, tried Avenue or a clip effect, or seen how
+  Arena's Opacity sits with a freeze. On Windows it has only run in Arena on software rendering.
 - **The inspector shows slider positions**, not seconds, percentages or prints a second. This guide
   gives the ranges, and where the middle of each slider is.
 - **Tried on a drawn test card, not much footage.** How the Aura key copes with a real clip, where
@@ -589,7 +596,7 @@ transparency, and the aura's light and the caption make a clear area opaque wher
 - **Memory at 4K:** about 556 MB of GPU memory, by the buffer sizes.
 - **Intel Macs:** the universal download has an Intel half, built and signed, which has never run
   on an Intel Mac.
-- **No presets** (Resolume saves parameter presets itself).
+- **No presets** (Resolume saves parameter presets itself), and no OpenFX version.
 
 ---
 
@@ -598,6 +605,12 @@ transparency, and the aura's light and the caption make a clear area opaque wher
 The last group, **About**, has the plugin's name, version, licence and maker (`Bluebook v0.1.0 -
 MIT - Stoatworks Labs, stoatworks-labs.com`), and buttons that open this user guide, the project
 page, the source on GitHub and the support page in your browser.
+
+To see it before you install it, there's a
+[browser demo](https://bluebook-demo.stoatworks-labs.com), the plugin's own shaders in WebGL2 with
+every control, and a [77-second video](https://www.youtube.com/watch?v=9FP7gUHqJWM) of the
+treatments and the freeze, rendered by the harness. The video is silent, and Freeze's flash goes
+off three times.
 
 ## Reporting something
 

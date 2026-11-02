@@ -89,7 +89,10 @@ the shaders, the grain layers or the aura's streamers.
   itself, not `trail` (which holds the freeze then).
 
 ## Not done yet
-- Never loaded into Resolume on macOS. On Windows, plugin-bench's Arena gate ran
+- Never played in a show. On macOS, Arena 7.28.1 was driven over REST with the
+  release build (README, Status): controls as declared, 38 live, Step On at Arena's
+  tempo, Freeze and Bypass, Caption saved. Not seen: the inspector's layout, whether
+  Step On reads the bar phase, Avenue. On Windows, plugin-bench's Arena gate ran
   a CI build in Arena 7.27.1 on win-lab (llvmpipe): loads, registers, every
   control as declared, renders, 38 controls move Arena's picture of a still, 2
   inconclusive against the grain, none dead (README, Status).

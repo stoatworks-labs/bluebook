@@ -183,10 +183,15 @@ live grain is new every film frame, so nobody can see it.
 
 ## Not done, and open questions
 
-- **Never loaded into Resolume on macOS.** The first Arena run there should check the
-  inspector's groups and names, Step On against Arena's transport, Caption as a text
-  field, and Freeze against a host's own Bypass. The Windows gate checked the names,
-  types and ranges, but drives only values and stills.
+- **Arena on macOS was driven over REST, not looked at** (7.28.1, 2026-11-02, the
+  release build; README, Status). Checked: the 56 controls as declared, Mix 0 bit-equal
+  to bypassed, 38 live, Step On's print interval against Arena's tempo, Freeze's hold,
+  Bypass mid-freeze (Arena stops calling the effect), Caption through save and reopen.
+  Still open: the inspector's group layout (REST doesn't show it), whether Step On reads
+  the bar phase or falls back to the tempo (both give the same intervals: log which one
+  it's on, or watch a print against Arena's downbeat), Avenue, clip effect, Opacity
+  against Freeze, cost in Arena, and unloading at quit (Arena ignored the scripted quit
+  and was signalled).
 - **Naming.** The README names The X-Files and NCIS once each, nominatively. The site
   dropped product names from `/hardware` at Allan's request; if he'd rather the same
   here, it's two sentences in the README and the Inspirations entries in
