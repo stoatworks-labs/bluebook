@@ -1,0 +1,34 @@
+/*
+ * Stoatworks Labs - About window data for Bluebook.
+ *
+ * A PROVISIONAL HAND COPY in the shape stoatworks-backend/scripts/sync-about.py
+ * generates, made before the project is registered in the website's
+ * projects.json. The first sync overwrites it; until then `guide` is empty
+ * because no user guide exists, which leaves the User guide button out.
+ */
+#pragma once
+
+namespace stoatworks::about
+{
+    inline constexpr auto name = "Bluebook";
+    inline constexpr auto slug = "bluebook";
+    inline constexpr auto hook = "A paranormal title sequence's look, for Resolume";
+    inline constexpr auto licence = "MIT";
+    inline constexpr auto guide = "";
+    inline constexpr auto page = "https://stoatworks-labs.com/software/bluebook/";
+    inline constexpr auto repo = "https://github.com/stoatworks-labs/bluebook";
+    inline constexpr auto versionFallback = "v0.1.0";
+
+    inline constexpr auto org = "Stoatworks Labs";
+    inline constexpr auto home = "https://stoatworks-labs.com";
+    inline constexpr auto tagline = "Open tools for the people who run the show.";
+
+    /* The canonical funding links, matching FUNDING.yml and the support footer. */
+    struct Link { const char* name; const char* url; };
+    inline constexpr Link funding[] = {
+        { "GitHub Sponsors", "https://github.com/sponsors/stoatworks-labs" },
+        { "Ko-fi", "https://ko-fi.com/stoatworkslabs" },
+        { "Patreon", "https://patreon.com/StoatworksLabs" },
+        { "Liberapay", "https://liberapay.com/stoatworks-labs" },
+    };
+}
