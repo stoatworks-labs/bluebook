@@ -142,7 +142,8 @@ Assumed, because nothing here can check it:
 - All 120 checks pass on Apple's software renderer, which found traps 3 to 5.
 - No `sin`, `cos`, `tan` or `atan` in the GLSL (`verify.sh` greps): the torch's path is
   worked out on the CPU, and every shape is an `exp` or a `smoothstep`.
-- Not tried: Mesa, or any Windows GL. There's no Windows build.
+- Not tried: Mesa, or any Windows GL. CI builds the Windows DLL with MSVC (no warnings
+  outside the SDK) and `tools/wincheck.ps1` loads it, but nothing has drawn with it.
 
 ## The negative controls and mutants
 
@@ -181,6 +182,6 @@ live grain is new every film frame, so nobody can see it.
   website entry, so
   `source/StoatworksAbout*.h` and `ATTRIBUTIONS.md` are hand copies until the backend
   generates them, and the README has no downloads block.
-- No Windows build, user guide, demo video or presets.
+- No user guide, demo video or presets. Windows: built and loaded in CI, never drawn.
 - The trail's memory at 4K (see Decisions). Allocating it in half float when Trail is 0
   would halve that, at the price of a reallocation when Trail is first raised.

@@ -111,6 +111,7 @@ again on **Apple's software renderer** at 320×180. What the checks establish:
 | mutation | **17** one-character mutants of the shipped GLSL and C++, **17** caught |
 | `tools/sweep.py` | all **50** controls it can move measurably change the picture |
 | shaders | all 7 compile through `glslc`, not merely through Apple's driver |
+| CI | on every push, GitHub's macOS runner builds it and runs the offline checks and every picture check on its software renderer; the Windows DLL is built and loaded as a host loads it (its name, ID and 54 parameters, Caption a text field) |
 
 The software renderer earned its keep: it found three things the GPU never showed (a mip
 level blended into a 1:1 read, `uv` landing a hair off the texel centres, and
@@ -118,11 +119,12 @@ level blended into a 1:1 read, `uv` landing a hair off the texel centres, and
 
 ### Not established
 
-It's **never been loaded into Resolume**, on any platform. Everything above was compiled,
-rendered and measured offline against the plugin's own class in a headless CGL context. I
+It's **never been loaded into Resolume**, on any platform. Everything above was measured
+offline: every picture against the plugin's own class in a headless CGL context. I
 haven't seen how the 54 controls read in Arena's inspector, whether Step On follows
-Arena's transport, or how a host's own Bypass and Opacity sit with Freeze. There's no
-Windows build yet, no user guide and no presets.
+Arena's transport, or how a host's own Bypass and Opacity sit with Freeze. The
+Windows DLL comes out of CI and answers a host's first questions correctly, but it's never
+drawn a frame. There's no user guide and no presets.
 
 The harness's test card is drawn, not filmed, so how the Aura key copes with real
 footage (where a bright sky is as "bright" as a hand) is a matter of setting Aura Key
@@ -150,6 +152,8 @@ cmake --install build
 
 The last one copies `Bluebook.bundle` into `~/Documents/Resolume Arena/Extra Effects`.
 Restart Arena and it's under Effects as **SW Bluebook**.
+
+Windows needs Visual Studio 2022 and vcpkg (for GLEW); see `.github/workflows/ci.yml`.
 
 ## Building and testing
 

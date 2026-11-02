@@ -80,6 +80,7 @@ the shaders, the grain layers or the aura's streamers.
   sources in the backend then.
 
 ## Not done yet
-- Never loaded into Resolume on any platform. No Windows build.
+- Never loaded into Resolume on any platform. The Windows DLL is built in CI
+  and `tools/wincheck.ps1` loads it, but it has never drawn a frame.
 - Public at github.com/stoatworks-labs/bluebook, with CI. Not registered in
   stoatworks-backend: no website entry. No user guide, video or presets.
