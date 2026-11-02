@@ -72,8 +72,8 @@ harness declares seconds instead (`SetClockScaleForTest`).
 - **Grain Size** is 1 to 4 px at 1080 lines and scales with the raster, so the grain is
   the same on the film whatever the output size.
 - **Trail is RGBA32F** (see the traps). It costs memory: at 4K the two trail buffers are
-  265 MB, about a third of the 760 MB or so the plugin allocates there (556 MB of colour,
-  and about 205 MB of depth; see Not done).
+  265 MB, nearly half of the 556 MB or so the plugin allocates there (all of it colour:
+  `PassBuffer` attaches no depth buffer).
 
 ## The traps actually hit
 
@@ -183,9 +183,3 @@ live grain is new every film frame, so nobody can see it.
 - No Windows build, user guide, demo video or presets.
 - The trail's memory at 4K (see Decisions). Allocating it in half float when Trail is 0
   would halve that, at the price of a reallocation when Trail is first raised.
-- **Every pass buffer has a depth buffer nobody uses.** `FFGLFBO::Initialise` always adds
-  a 24-bit depth renderbuffer, and nothing here draws with depth: nine of them, about
-  205 MB at 4K. `PassBuffer` came from schlieren, and on 2 November 2026 65 plugins under
-  `~/Projects/resolume` built theirs through the same `Initialise` (conway, honeydew,
-  langton, slipstream, stencil and toolpath don't). So the fix (allocate without one)
-  is a sweep across the fleet, not a change to this repo alone.
